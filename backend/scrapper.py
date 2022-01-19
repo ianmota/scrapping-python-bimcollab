@@ -11,12 +11,14 @@ import openpyxl.styles as ops
 import requests 
 
 class Scrapper():
+
     def __init__(self):
         self.login = 'camaragibe@projete5d.com.br'
         self.password = '@timeprojete5d'
         self.planilha = 'registros/teste2.xlsx'
         Scrapper.coleta_de_dados(self)
         Scrapper.salvar_dados(self)
+
     def coleta_de_dados(self):
         #*Navegador
         conf = Options()
@@ -42,6 +44,7 @@ class Scrapper():
 
         #*Coleta das informações
         self.lista_issue = navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
+        
         for i in range(len(self.lista_issue)):
             navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
             site = bs(navegador.page_source, 'html.parser')
