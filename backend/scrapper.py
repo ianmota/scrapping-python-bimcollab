@@ -15,7 +15,9 @@ class Scrapper():
     def __init__(self):
         self.login = 'camaragibe@projete5d.com.br'
         self.password = '@timeprojete5d'
-        self.planilha = 'registros/teste2.xlsx'
+        self.incompatibilidades = "0-1"
+        self.checkbox = False
+        self.local = "data"
         Scrapper.coleta_de_dados(self)
         Scrapper.salvar_dados(self)
 
@@ -45,49 +47,89 @@ class Scrapper():
         #*Coleta das informações
         self.lista_issue = navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
         
-        for i in range(len(self.lista_issue)):
-            navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
-            site = bs(navegador.page_source, 'html.parser')
+        if self.incompatibilidades:
 
-            #* Coleta do título e prioridade
-            titulo = site.find('span',attrs={'id':'LabelDescription'})
-            if (titulo.text == "-"):
+            filtro = range(int(self.incompatibilidades[0]),int(self.incompatibilidades[2])+1)
+
+            for i in filtro:
+                navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
+                site = bs(navegador.page_source, 'html.parser')
+
+                #* Coleta do título e prioridade
+                titulo = site.find('span',attrs={'id':'LabelDescription'})
+                if (titulo.text == "-"):
+                    navegador.back()
+                    continue
+                
+                nome_issue = site.find('span',attrs={'id':'LabelTopic'})
+                self.nomes.append(nome_issue.text)
+
+                nome = f'data/{c+1}.jpg'
+
+                prioridade = site.find('span', attrs={'id':'LabelPriority'})
+                self.titulos.append(titulo.text)
+                self.prioridades.append(prioridade.text)
+
+                #* Coleta da descrição
+                u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
+                for i in range(len(u)):
+                    desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
+                    d = desc.p.text +'\n'+ d 
+
+                self.descricao.append(d)    
+                d = ''
+
+                #* Coleta da imagem
+                imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
+                a =imagem['style'] 
+                f = open(nome,'wb')
+                response = requests.get('https://join.bimcollab.com/' + a[21:-5])
+                f.write(response.content)
+                f.close
+            
                 navegador.back()
-                continue
+                sleep(0.5)
+
+        if not self.incompatibilidades:
+            for i in range(len(self.lista_issue)):
+                navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
+                site = bs(navegador.page_source, 'html.parser')
+
+                #* Coleta do título e prioridade
+                titulo = site.find('span',attrs={'id':'LabelDescription'})
+                if (titulo.text == "-"):
+                    navegador.back()
+                    continue
+                
+                nome_issue = site.find('span',attrs={'id':'LabelTopic'})
+                self.nomes.append(nome_issue.text)
+
+                nome = f'data/{c+1}.jpg'
+
+                prioridade = site.find('span', attrs={'id':'LabelPriority'})
+                self.titulos.append(titulo.text)
+                self.prioridades.append(prioridade.text)
+
+                #* Coleta da descrição
+                u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
+                for i in range(len(u)):
+                    desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
+                    d = desc.p.text +'\n'+ d 
+
+                self.descricao.append(d)    
+                d = ''
+
+                #* Coleta da imagem
+                imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
+                a =imagem['style'] 
+                f = open(nome,'wb')
+                response = requests.get('https://join.bimcollab.com/' + a[21:-5])
+                f.write(response.content)
+                f.close
             
-            nome_issue = site.find('span',attrs={'id':'LabelTopic'})
-            self.nomes.append(nome_issue.text)
+                navegador.back()
+                sleep(0.5)
 
-            nome = f'registros/{c+1}.jpg'
-
-            prioridade = site.find('span', attrs={'id':'LabelPriority'})
-            self.titulos.append(titulo.text)
-            self.prioridades.append(prioridade.text)
-
-            #* Coleta da descrição
-            u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
-            for i in range(len(u)):
-                desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
-                d = desc.p.text +'\n'+ d 
-
-            self.descricao.append(d)    
-            d = ''
-
-            #* Coleta da imagem
-            imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
-            a =imagem['style'] 
-            f = open(nome,'wb')
-            response = requests.get('https://join.bimcollab.com/' + a[21:-5])
-            f.write(response.content)
-            f.close
-        
-            navegador.back()
-            sleep(0.5)
-            
-            
-            c += 1
-            if c == 5:
-                break
     def salvar_dados(self):
         lw = op.Workbook()
         sheet = lw.active
@@ -140,7 +182,7 @@ class Scrapper():
             sheet[f'A{t}'].alignment = alinhamento2
 
             #* Estilo de imagem
-            imagem = Image('registros/'+str(i+1)+'.jpg')
+            imagem = Image('data/'+str(i+1)+'.jpg')
             imagem.width=599
             imagem.height=763
 
@@ -170,4 +212,14 @@ class Scrapper():
             n+=50
             x+=50
             count+=1
-        lw.save(self.planilha)    
+        
+        nome_planilha = "data/"
+        for i in self.login:
+            if i == "@":
+                break
+            nome_planilha = nome_planilha + i 
+        
+        nome_planilha = nome_planilha + ".xlsx"
+        lw.save(nome_planilha)    
+                
+Scrapper()
