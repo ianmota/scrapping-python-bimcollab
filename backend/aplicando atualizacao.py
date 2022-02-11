@@ -1,5 +1,3 @@
-
-#! Importações
 from bs4 import BeautifulSoup as bs
 from openpyxl.styles import Border, Side, Alignment 
 from selenium import webdriver
@@ -21,23 +19,74 @@ class Scrapper():
         Scrapper.coleta_de_dados(self)
         Scrapper.salvar_dados(self)
 
-    def coleta_de_dados(self):
-        #*Navegador
+    def abrir_navegador(self):
         conf = Options()
         #conf.add_argument('--headless')
         navegador = webdriver.Chrome(options=conf)
         navegador.get('https://join.bimcollab.com/WebApp/Account/Login.aspx')
 
-        #* Movimentação no sistema
+    def fazer_login(self):
         sleep(30)
-        navegador.find_element_by_id('email').send_keys(self.login)
-        navegador.find_element_by_css_selector("#login").click()
+        self.navegador.find_element_by_id('email').send_keys(self.login)
+        self.navegador.find_element_by_css_selector("#login").click()
         sleep(5)
-        navegador.find_element_by_id('password').send_keys(self.password)
-        navegador.find_element_by_css_selector("#loginWithPassword").click()
+        self.navegador.find_element_by_id('password').send_keys(self.password)
+        self.navegador.find_element_by_css_selector("#loginWithPassword").click()
         sleep(10)
-        selecionar_projeto = navegador.find_element_by_css_selector('#ProjectImage').click()
-        selecionar_issue = navegador.find_element_by_css_selector('#HyperLinkIssue').click()
+        self.navegador.find_element_by_css_selector('#ProjectImage').click()
+
+    def coletar_issue(self):
+        if self.incompatibilidades:
+            filtro = range(int(self.incompatibilidades[0]),int(self.incompatibilidades[2])+1)
+        if not self.incompatibilidades:
+            filtro = range(len(self.lista_issue))
+
+        for i in filtro:
+            self.navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
+            site = bs(self.navegador.page_source, 'html.parser')
+
+            #* Coleta do título e prioridade
+            titulo = site.find('span',attrs={'id':'LabelDescription'})
+            if (titulo.text == "-"):
+                self.navegador.back()
+                continue
+            
+            nome_issue = site.find('span',attrs={'id':'LabelTopic'})
+            self.nomes.append(nome_issue.text)
+
+            nome = f'data/{i+1}.jpg'
+
+            prioridade = site.find('span', attrs={'id':'LabelPriority'})
+            self.titulos.append(titulo.text)
+            self.prioridades.append(prioridade.text)
+
+            #* Coleta da descrição
+            u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
+            for i in range(len(u)):
+                desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
+                d = desc.p.text +'\n'+ d 
+
+            self.descricao.append(d)    
+            d = ''
+
+            #* Coleta da imagem
+            imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
+            a =imagem['style'] 
+            f = open(nome,'wb')
+            response = requests.get('https://join.bimcollab.com/' + a[21:-5])
+            f.write(response.content)
+            f.close
+        
+            navegador.back()
+            sleep(0.5)
+
+    def verificar_issues(self):
+        self.navegador.find_element_by_css_selector('#HyperLinkIssue').click()
+        self.lista_issue = self.navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
+
+    def coleta_de_dados(self):
+        Scrapper.abrir_navegador()
+        Scrapper.fazer_login()
 
         #*Variáveis
         c=0
@@ -48,51 +97,13 @@ class Scrapper():
         d = ''
 
         #*Coleta das informações
-        self.lista_issue = navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
+        Scrapper.coletar_issue()
         
         if self.incompatibilidades:
 
             #filtro = range(int(self.incompatibilidades[0]),int(self.incompatibilidades[2])+1)
             filtro = range(0,34)
-            for i in filtro:
-                navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
-                site = bs(navegador.page_source, 'html.parser')
 
-                #* Coleta do título e prioridade
-                titulo = site.find('span',attrs={'id':'LabelDescription'})
-                if (titulo.text == "-"):
-                    navegador.back()
-                    continue
-                
-                nome_issue = site.find('span',attrs={'id':'LabelTopic'})
-                self.nomes.append(nome_issue.text)
-
-                nome = f'data/{c+1}.jpg'
-                c+=1
-
-                prioridade = site.find('span', attrs={'id':'LabelPriority'})
-                self.titulos.append(titulo.text)
-                self.prioridades.append(prioridade.text)
-
-                #* Coleta da descrição
-                u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
-                for i in range(len(u)):
-                    desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
-                    d = desc.p.text +'\n'+ d 
-
-                self.descricao.append(d)    
-                d = ''
-
-                #* Coleta da imagem
-                imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
-                a =imagem['style'] 
-                f = open(nome,'wb')
-                response = requests.get('https://join.bimcollab.com/' + a[21:-5])
-                f.write(response.content)
-                f.close
-            
-                navegador.back()
-                sleep(0.5)
 
         if not self.incompatibilidades:
             for i in range(len(self.lista_issue)):
@@ -108,7 +119,7 @@ class Scrapper():
                 nome_issue = site.find('span',attrs={'id':'LabelTopic'})
                 self.nomes.append(nome_issue.text)
 
-                nome = f'data/{c+1}.jpg'
+                nome = f'data/{i+1}.jpg'
 
                 prioridade = site.find('span', attrs={'id':'LabelPriority'})
                 self.titulos.append(titulo.text)
@@ -132,7 +143,6 @@ class Scrapper():
                 f.close
             
                 navegador.back()
-                c+=1
                 sleep(0.5)
 
     def salvar_dados(self):
