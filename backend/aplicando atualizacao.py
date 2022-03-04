@@ -13,7 +13,7 @@ class Scrapper():
         self.login = "oscarfreire@projete5d.com.br"
         self.password = "@Timeprojete5d"
         self.filtro_geral = 1 #1 para abertos 0 para todos
-        self.ordem_geral = 0 #0 id 1-area 2-titulo
+        self.ordem_geral = 0 #0-id 1-area 2-titulo
         self.incompatibilidades = ["35-38"]
         self.local_save = "data"
         self.start_relatorio()
@@ -72,7 +72,7 @@ class Scrapper():
                 time.sleep(4)
         except selenium.common.exceptions.NoSuchElementException:
             self.navegador.refresh()
-            print("Erro na seleção do projeto")
+            print("Erro nas issues")
             time.sleep(1)
             self.VerificadorIssues = True
     def filtro(self):
@@ -90,22 +90,9 @@ class Scrapper():
                     time.sleep(1)
         except selenium.common.exceptions.NoSuchElementException:
             self.navegador.refresh()
-            print("Erro na seleção do projeto")
+            print("Erro no filtro")
             time.sleep(1)
             self.VerificadorFiltro = True
-    def ordem(self):
-        if(self.ordem_geral==0):
-            if(self.navegador.find_element_by_id("LabelHeaderNr")):
-                self.navegador.find_element_by_id("LabelHeaderNr").click()
-                time.sleep(1)
-        if(self.ordem_geral==1):
-            if(self.navegador.find_element_by_id("LabelHeaderArea")):
-                self.navegador.find_element_by_id("LabelHeaderArea").click()
-                time.sleep(1)
-        if(self.ordem_geral==2):
-            if(self.navegador.find_element_by_id("LabelHeaderTitle")):
-                self.navegador.find_element_by_id("LabelHeaderTitle").click()
-                time.sleep(1)
     def coletar_descricao(self):
         self.descricao = []
 
@@ -187,10 +174,10 @@ class Scrapper():
             for i in issueimg:
 
                 issuelink = i["href"]
-                self.imagem.append(issuelink)
-                f = open(f"{self.local_save}{issuelink}.png","wb")
+                self.imagem.append(issuelink[-12:])
+                f = open(f"{self.local_save}/{issuelink[-12:]}.png","wb")
                 f.write(requests.get(f"https://join.bimcollab.com{issuelink}").content)
-                f.close()
+                f.close() 
     def selecao_incompatibilidades(self):
         lista_issue = self.navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
 
@@ -214,12 +201,12 @@ class Scrapper():
                     self.filtro_incompatibilidades.append(int(a))
 
         if not self.incompatibilidades:
-            self.filtro = range(len(lista_issue))
+            self.filtro_incompatibilidades = range(len(lista_issue))
     def coletar_dados(self):
-        self.selecao_incompatibilidades()
 
         for i in self.filtro_incompatibilidades:
             self.navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
+
             self.site = bs(self.navegador.page_source, 'html.parser')
 
             self.coletar_descricao()
@@ -236,7 +223,29 @@ class Scrapper():
             self.coletar_comentarios_imagens()
             self.navegador.back()
             time.sleep(1)
-   
+    def ordem(self):
+
+        if(self.ordem_geral==0):
+            site_issue = bs(self.navegador.page_source, "html.parser")
+            verificador = site_issue.find("span",attrs={"id":"LabelIndex_0"})
+
+            if(verificador.text != str(self.filtro_incompatibilidades[0]+1)):
+                if(self.navegador.find_element_by_id("LabelHeaderNr")):
+                    self.navegador.find_element_by_id("LabelHeaderNr").click()
+                    self.navegador.refresh()
+                    time.sleep(1)
+            else: 
+                self.VerificadorOrdem = True
+
+
+        if(self.ordem_geral==1):
+            if(self.navegador.find_element_by_id("LabelHeaderArea")):
+                self.navegador.find_element_by_id("LabelHeaderArea").click()
+                time.sleep(1)
+        if(self.ordem_geral==2):
+            if(self.navegador.find_element_by_id("LabelHeaderTitle")):
+                self.navegador.find_element_by_id("LabelHeaderTitle").click()
+                time.sleep(1)                                                                                                                     
     def start_relatorio(self):
         self.VerificadorEmail = True
         self.VerificadorSenha = False
@@ -244,39 +253,41 @@ class Scrapper():
         self.VerificadorProjeto = False
         self.VerificadorIssues = False
         self.VerificadorFiltro = False   
-        VerificadorOrdem = False
+        self.VerificadorOrdem = False
         VerificadorColeta = False
         self.abrir_navegador()
 
         time.sleep(1)
         while True:
             if(self.VerificadorEmail):
-                self.add_login()
                 self.VerificadorEmail = False
+                self.add_login()
                 self.VerificadorSenha = True
             if(self.VerificadorSenha):
-                self.add_senha()
                 self.VerificadorSenha = False
+                self.add_senha()
                 self.VerificadorCompany = True
+                self.VerificadorProjeto = True
             if(self.VerificadorCompany):
-                self.add_company()
                 self.VerificadorCompany = False   
+                self.add_company()
                 self.VerificadorProjeto = True                 
             if(self.VerificadorProjeto):
-                self.select_project()
                 self.VerificadorProjeto = False
+                self.select_project()
                 self.VerificadorIssues = True
             if(self.VerificadorIssues):
-                self.go_to_issues()
                 self.VerificadorIssues = False
+                self.go_to_issues()
                 self.VerificadorFiltro = True
             if(self.VerificadorFiltro):
-                self.filtro()
                 self.VerificadorFiltro = False
-                VerificadorOrdem = True
-            if(VerificadorOrdem):
+                self.filtro()
+                self.VerificadorOrdem = True
+            if(self.VerificadorOrdem):
+                self.VerificadorOrdem = False
+                self.selecao_incompatibilidades()
                 self.ordem()
-                VerificadorOrdem = False
                 VerificadorColeta = True
             if(VerificadorColeta):
                 self.coletar_dados()

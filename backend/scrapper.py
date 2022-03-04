@@ -13,9 +13,9 @@ import requests
 class Scrapper():
 
     def __init__(self):
-        self.login = 'oscarfreire@projete5d.com.br'
-        self.password = '@Timeprojete5d'
-        self.incompatibilidades = ""
+        self.login = 'maxtrindade@projete5d.com.br'
+        self.password = '@timeprojete5d'
+        self.incompatibilidades = "a"
         self.checkbox = False
         self.local = "data"
         Scrapper.coleta_de_dados(self)
@@ -53,7 +53,7 @@ class Scrapper():
         if self.incompatibilidades:
 
             #filtro = range(int(self.incompatibilidades[0]),int(self.incompatibilidades[2])+1)
-            filtro = range(0,34)
+            filtro = [182,183,184,185]
             for i in filtro:
                 navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
                 site = bs(navegador.page_source, 'html.parser')
