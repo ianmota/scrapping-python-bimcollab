@@ -1,139 +1,266 @@
-
-#! Importações
+from multiprocessing.reduction import send_handle
+from types import NoneType
 from bs4 import BeautifulSoup as bs
-from openpyxl.styles import Border, Side, Alignment 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from time import sleep
+import selenium
+import time
 import openpyxl as op
 from openpyxl.drawing.image import Image
 import openpyxl.styles as ops
 import requests 
 
-class Scrapper():
-
-    def __init__(self):
-        self.login = 'maxtrindade@projete5d.com.br'
-        self.password = '@timeprojete5d'
-        self.incompatibilidades = "a"
-        self.checkbox = False
-        self.local = "data"
-        Scrapper.coleta_de_dados(self)
-        Scrapper.salvar_dados(self)
-
-    def coleta_de_dados(self):
-        #*Navegador
+class Scrapper_collect():
+    def __init__(self,login:str,senha:str,filtro:int,ordem:int,incompatibilidades:str,local_save:str):
+        self.login = login
+        self.password = senha
+        self.filtro_geral = filtro #1 para abertos 0 para todos
+        self.ordem_geral = ordem #0-id 1-area 2-titulo
+        self.incompatibilidades = []
+        self.local_save = local_save
+    
+    def __str__(self) -> str:
+        return("Scrapper")
+    
+    def __repr__(self) -> str:
+        return("Scrapper")
+    
+    def abrir_navegador(self)->webdriver:
         conf = Options()
         #conf.add_argument('--headless')
-        navegador = webdriver.Chrome(options=conf)
-        navegador.get('https://join.bimcollab.com/WebApp/Account/Login.aspx')
+        self.navegador = webdriver.Chrome(options=conf)
+        self.navegador.get("https://join.bimcollab.com/WebApp/Account/Login.aspx")
+        time.sleep(1)
+       
+    def add_login(self)->NoneType:
+            if(self.navegador.find_element_by_id("email")):
+                self.navegador.find_element_by_id("email").send_keys(self.login)
+                self.navegador.find_element_by_css_selector("#login").click()
+                time.sleep(1)
+                        
+    def add_senha(self)->NoneType:
+        if(self.navegador.find_element_by_id("password")):
+            self.navegador.find_element_by_id("password").send_keys(self.password)
+            self.navegador.find_element_by_css_selector("#loginWithPassword").click()
+            time.sleep(2)
+               
+    def add_company(self)->NoneType:
+        if(self.navegador.find_element_by_id("saveCompanyInfo")):
+            self.navegador.find_element_by_id("saveCompanyInfo").click()
+            time.sleep(2)
+               
+    def select_project(self)->NoneType:
+        if(self.navegador.find_element_by_css_selector('#ProjectImage')):
+            self.navegador.find_element_by_css_selector('#ProjectImage').click()   
+            time.sleep(1)
 
-        #* Movimentação no sistema
-        sleep(30)
-        navegador.find_element_by_id('email').send_keys(self.login)
-        navegador.find_element_by_css_selector("#login").click()
-        sleep(5)
-        navegador.find_element_by_id('password').send_keys(self.password)
-        navegador.find_element_by_css_selector("#loginWithPassword").click()
-        sleep(10)
-        selecionar_projeto = navegador.find_element_by_css_selector('#ProjectImage').click()
-        selecionar_issue = navegador.find_element_by_css_selector('#HyperLinkIssue').click()
-
-        #*Variáveis
-        c=0
-        self.descricao = []
-        self.titulos = []
-        self.prioridades = []
-        self.nomes = []
-        d = ''
-
-        #*Coleta das informações
-        self.lista_issue = navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
+    def go_to_issues(self)->NoneType:
+        if(self.navegador.find_element_by_css_selector('#HyperLinkIssue')):
+            self.navegador.find_element_by_css_selector('#HyperLinkIssue').click()
+            time.sleep(4)
+            
+    def filtro(self)->NoneType:
+        if(self.filtro_geral==1):
+            if(self.navegador.find_element_by_id("LinkButtonAllOpen")):
+                self.navegador.find_element_by_id("LinkButtonAllOpen").click()
+                time.sleep(1)
+        elif(self.filtro_geral==0):
+            if(self.navegador.find_element_by_id("LinkButtonAll")):
+                self.navegador.find_element_by_id("LinkButtonAll").click()
+                time.sleep(1)
+    
+    def coletar_numero(self)->list:
+        numero=[]
+        if(self.site.find('div',attrs={'id':'LabelId'})):
+            d = self.site.find('div',attrs={'id':'LabelId'}).text
+            numero.append(d)
+        return(numero)
         
+    def coletar_descricao(self)->list:
+        descricao = []
+
+        if(self.site.find('span', attrs={"id":"LabelDescription"})):
+            if(self.site.find('span',attrs={"id":"LabelDescription"}).text == '-'):
+                self.navegador.back() 
+            else:
+                d = self.site.find("span",attrs={"id":"LabelDescription"}).text
+                descricao.append(d)
+        return(descricao)
+                
+    def coletar_titulo(self)->list:
+        titulo = []
+
+        if(self.site.find('span',attrs={'id':'LabelTopic'})):
+            d = self.site.find('span',attrs={'id':'LabelTopic'}).text
+            titulo.append(d)
+        return(titulo)
+    
+    def coletar_prioridade(self)->list:
+        prioridade = []
+
+        if(self.site.find('span', attrs={'id':'LabelPriority'})):
+            d = self.site.find('span', attrs={'id':'LabelPriority'})
+            prioridade.append(d)
+        return(prioridade)
+    
+    def coletar_responsavel(self)->list:
+        responsavel = []
+
+        if(self.site.find('span', attrs={'id':'LabelAssignTo'})):
+            d = self.site.find('span', attrs={'id':'LabelAssignTo'}).text
+            responsavel.append(d)
+        return(responsavel)
+    
+    def coletar_tipo(self)->list:
+        tipo = []
+
+        if(self.site.find('span', attrs={'id':'LabelType'})):
+            d = self.site.find('span', attrs={'id':'LabelType'}).text
+            tipo.append(d)
+        return(tipo)
+    
+    def coletar_area(self)->list:
+        area = []
+
+        if(self.site.find('span', attrs={'id':'LabelArea'})):
+            d = self.site.find('span', attrs={'id':'LabelArea'}).text
+            area.append(d)
+        return(area)
+    
+    def coletar_data(self)->list:
+        data = []
+
+        if(self.site.find('span', attrs={'id':'LabelDeadline'})):
+            d = self.site.find('span', attrs={'id':'LabelDeadline'}).text
+            data.append(d)
+        return(data)
+            
+    def coletar_etiqueta(self)->list:
+        etiqueta = []
+
+        if(self.site.find('span', attrs={'id':'LabelLabel'})):
+            d = self.site.find('span', attrs={'id':'LabelLabel'}).text
+            etiqueta.append(d)
+        return(etiqueta)
+    
+    def coletar_milestone(self)->list:
+        milestone = []
+
+        if(self.site.find('span', attrs={'id':'LabelMilestone'})):
+            d = self.site.find('span', attrs={'id':'LabelMilestone'}).text
+            milestone.append(d)
+        return(milestone)
+    
+    def coletar_status(self)->list:
+        status = []
+
+        if(self.site.find('span', attrs={'id':'LabelStatus'})):
+            d = self.site.find('span', attrs={'id':'LabelStatus'}).text
+            status.append(d)
+        return(status)
+    
+    def coletar_empreendimento(self)->list:
+        empreendimento = []
+
+        if(self.site.find('span', attrs={'id':'LabelCurrentProject'})):
+            d = self.site.find('span', attrs={'id':'LabelCurrentProject'}).text
+            empreendimento.append(d)
+        return(empreendimento)
+    
+    def coletar_comentarios_imagens(self)->list:
+        comentario = []
+        imagem = []
+        elementos = self.site.find_all("div",attrs={"class":"onerow commentContent innerPaddingComment"})
+        for i in range(len(elementos)):
+            d = self.site.find_all("div",attrs={"class":"onerow commentContent innerPaddingComment"})[i]
+            comentario.append(d)
+
+            issueimg = self.site.find_all('a',attrs={"class":"viewpointIssueImgLink previewLeft"})
+            for i in issueimg:
+
+                issuelink = i["href"]
+                imagem.append(issuelink[-12:])
+                f = open(f"{self.local_save}/{issuelink[-12:]}.png","wb")
+                f.write(requests.get(f"https://join.bimcollab.com{issuelink}").content)
+                f.close() 
+            return([comentario,imagem])
+        
+    def selecao_incompatibilidades(self):
+        lista_issue = self.navegador.find_elements_by_css_selector(".gridViewRow > .colTitle")
+
         if self.incompatibilidades:
-
-            #filtro = range(int(self.incompatibilidades[0]),int(self.incompatibilidades[2])+1)
-            filtro = [182,183,184,185]
-            for i in filtro:
-                navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
-                site = bs(navegador.page_source, 'html.parser')
-
-                #* Coleta do título e prioridade
-                titulo = site.find('span',attrs={'id':'LabelDescription'})
-                if (titulo.text == "-"):
-                    navegador.back()
-                    continue
-                
-                nome_issue = site.find('span',attrs={'id':'LabelTopic'})
-                self.nomes.append(nome_issue.text)
-
-                nome = f'data/{c+1}.jpg'
-                c+=1
-
-                prioridade = site.find('span', attrs={'id':'LabelPriority'})
-                self.titulos.append(titulo.text)
-                self.prioridades.append(prioridade.text)
-
-                #* Coleta da descrição
-                u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
-                for i in range(len(u)):
-                    desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
-                    d = desc.p.text +'\n'+ d 
-
-                self.descricao.append(d)    
-                d = ''
-
-                #* Coleta da imagem
-                imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
-                a =imagem['style'] 
-                f = open(nome,'wb')
-                response = requests.get('https://join.bimcollab.com/' + a[21:-5])
-                f.write(response.content)
-                f.close
             
-                navegador.back()
-                sleep(0.5)
-
+            filtro_incompatibilidades = []
+            for i in self.incompatibilidades:
+                a = ''
+                for j in i:
+                    if j == '-':
+                        b = a
+                        a = ''
+                    else:
+                        a = a + j
+                
+                if b:
+                    for i in range(int(b)-1,int(a)):
+                        filtro_incompatibilidades.append(i)
+                    b = ''
+                else:
+                    filtro_incompatibilidades.append(int(a))
+        
         if not self.incompatibilidades:
-            for i in range(len(self.lista_issue)):
-                navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
-                site = bs(navegador.page_source, 'html.parser')
+            filtro_incompatibilidades = range(len(lista_issue))
+        return(filtro_incompatibilidades)
+    
+    def coletar_dados(self):
 
-                #* Coleta do título e prioridade
-                titulo = site.find('span',attrs={'id':'LabelDescription'})
-                if (titulo.text == "-"):
-                    navegador.back()
-                    continue
-                
-                nome_issue = site.find('span',attrs={'id':'LabelTopic'})
-                self.nomes.append(nome_issue.text)
+        for i in self.selecao_incompatibilidades():
+            self.navegador.find_element_by_css_selector(f"#LabelIndex_{i}").click()
 
-                nome = f'data/{c+1}.jpg'
-
-                prioridade = site.find('span', attrs={'id':'LabelPriority'})
-                self.titulos.append(titulo.text)
-                self.prioridades.append(prioridade.text)
-
-                #* Coleta da descrição
-                u = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})
-                for i in range(len(u)):
-                    desc = site.find_all('div',attrs={'class':'onerow commentContent innerPaddingComment'})[i]
-                    d = desc.p.text +'\n'+ d 
-
-                self.descricao.append(d)    
-                d = ''
-
-                #* Coleta da imagem
-                imagem = site.find('div',attrs={'class':'thumbnailImageFrame backgroundWhite'})
-                a =imagem['style'] 
-                f = open(nome,'wb')
-                response = requests.get('https://join.bimcollab.com/' + a[21:-5])
-                f.write(response.content)
-                f.close
+            self.site = bs(self.navegador.page_source, 'html.parser')
             
-                navegador.back()
-                c+=1
-                sleep(0.5)
+            dados = {
+                "descricao": self.coletar_descricao(),
+                "prioridade":self.coletar_prioridade(),
+                "titulo": self.coletar_titulo(),
+                "tipo": self.coletar_tipo(),
+                "responsavel": self.coletar_responsavel(),
+                "etiqueta": self.coletar_etiqueta(),
+                "area":self.coletar_area(),
+                "data": self.coletar_data(),
+                "milestone": self.coletar_milestone(),
+                "status": self.coletar_status(),
+                "empreendimento": self.coletar_empreendimento(),
+                "imagens": self.coletar_comentarios_imagens()
+            }
+            
+            self.navegador.back()
+            time.sleep(1)
+            
+        return(dados)
+    
+    def ordem(self):
+
+        if(self.ordem_geral==0):
+            site_issue = bs(self.navegador.page_source, "html.parser")
+            verificador = site_issue.find("span",attrs={"id":"LabelIndex_0"})
+
+            if(verificador.text != str(self.filtro_incompatibilidades[0]+1)):
+                if(self.navegador.find_element_by_id("LabelHeaderNr")):
+                    self.navegador.find_element_by_id("LabelHeaderNr").click()
+                    self.navegador.refresh()
+                    time.sleep(1)
+            else: 
+                self.VerificadorOrdem = True
+
+
+        if(self.ordem_geral==1):
+            if(self.navegador.find_element_by_id("LabelHeaderArea")):
+                self.navegador.find_element_by_id("LabelHeaderArea").click()
+                time.sleep(1)
+        if(self.ordem_geral==2):
+            if(self.navegador.find_element_by_id("LabelHeaderTitle")):
+                self.navegador.find_element_by_id("LabelHeaderTitle").click()
+                time.sleep(1)                                                                                                                     
 
     def salvar_dados(self):
         lw = op.Workbook()
@@ -147,44 +274,44 @@ class Scrapper():
         count = 0
         for i in range(len(self.titulos)):
 
-            thick = Side(border_style='thin',color='00000000')
+            thick = ops.Side(border_style='thin',color='00000000')
             fonte = ops.Font(name='Montserrat',size=11)
-            alinhamento = Alignment(horizontal="distributed",vertical="distributed")
-            alinhamento3 = Alignment(horizontal="left",vertical="distributed")
-            alinhamento2 = Alignment(horizontal="distributed",vertical="distributed",text_rotation=90)
+            alinhamento = ops.Alignment(horizontal="distributed",vertical="distributed")
+            alinhamento3 = ops.Alignment(horizontal="left",vertical="distributed")
+            alinhamento2 = ops.Alignment(horizontal="distributed",vertical="distributed",text_rotation=90)
 
             #?C2:I2
-            sheet[f'C{r}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)            
+            sheet[f'C{r}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)            
             sheet[f'C{r}'].font = fonte
-            sheet[f'C{r}'].alignment = alinhamento3
+            sheet[f'C{r}'].Alignment = alinhamento3
             #? A1
-            sheet[f'A{k}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'A{k}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'A{k}'].font = fonte
-            sheet[f'A{k}'].alignment = alinhamento
+            sheet[f'A{k}'].Alignment = alinhamento
             #? A2:B2
-            sheet[f'A{r}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'A{r}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'A{r}'].font = fonte
-            sheet[f'A{r}'].alignment = alinhamento3
+            sheet[f'A{r}'].Alignment = alinhamento3
             #? B3:K8
-            sheet[f'B{t}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'B{t}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'B{t}'].font = fonte
-            sheet[f'B{t}'].alignment = alinhamento3
+            sheet[f'B{t}'].Alignment = alinhamento3
 
-            sheet[f'B{k}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'B{k}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'B{k}'].font = fonte
-            sheet[f'B{k}'].alignment = alinhamento3
+            sheet[f'B{k}'].Alignment = alinhamento3
 
-            sheet[f'H{k}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'H{k}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'H{k}'].font = fonte
-            sheet[f'H{k}'].alignment = alinhamento
+            sheet[f'H{k}'].Alignment = alinhamento
 
-            sheet[f'H{r}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'H{r}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'H{r}'].font = fonte
-            sheet[f'H{r}'].alignment = alinhamento
+            sheet[f'H{r}'].Alignment = alinhamento
 
-            sheet[f'A{t}'].border = Border(left=thick,right=thick,top=thick,bottom=thick)
+            sheet[f'A{t}'].Border = ops.Border(left=thick,right=thick,top=thick,bottom=thick)
             sheet[f'A{t}'].font = fonte
-            sheet[f'A{t}'].alignment = alinhamento2
+            sheet[f'A{t}'].Alignment = alinhamento2
 
             #* Estilo de imagem
             imagem = Image('data/'+str(i+1)+'.jpg')
@@ -227,4 +354,3 @@ class Scrapper():
         nome_planilha = nome_planilha + ".xlsx"
         lw.save(nome_planilha)    
                 
-Scrapper()
