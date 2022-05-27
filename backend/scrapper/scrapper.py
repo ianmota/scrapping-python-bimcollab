@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import requests 
-from errorScrapper.errorHandling import *
+from backend.scrapper.errorScrapper.errorHandling import *
 
 class ScrapperResearch():
     def __init__(self,login:str,senha:str,local_save:str,standardTime:int = 15):
@@ -160,12 +160,10 @@ class ScrapperResearch():
                 html = bs(self.navegador.page_source, 'html.parser')
                 self.htmlList.append(html)
                 self.navegador.back()
-                
-            finally:
-                self.navegador.quit()
+            
 
 class ScrapperColect():
-    def __init__(self,htmlPage:ScrapperResearch):
+    def __init__(self,htmlPage:bs):
         """Busca a nível baixo de informações em html
 
         Args:
@@ -175,110 +173,295 @@ class ScrapperColect():
         self.htmlList = htmlPage
     
     def __str__(self) -> str:
-        return("database")
+        return("Colect data")
     
     def __repr__(self) -> str:
-        return("DataBase")
+        return("Colect()")
     
-    def coletar_numero(self)->list:
-        numero=[]
-        if(self.htmlList.find('div',attrs={'id':'LabelId'})):
-            d = self.site.find('div',attrs={'id':'LabelId'}).text
-            numero.append(d)
-        return(numero)
+    def numberColect(self)->int:
+        """coleta o número de todas as incompatibilidades
+
+        Returns:
+            int: 3
+        """
+        number = self.htmlList.find('span',attrs={'id':'LabelId'}).text
+        status = ResultStatus(11,f'Número {number} coletado').statusGenerate()
+        print(status)
+        return(number)   
         
-    def coletar_descricao(self)->list:
-        descricao = []
+    def statusColect(self)->str:
+        """Coletar o status do dado
 
-        if(self.site.find('span', attrs={"id":"LabelDescription"})):
-            if(self.site.find('span',attrs={"id":"LabelDescription"}).text == '-'):
-                self.navegador.back() 
-            else:
-                d = self.site.find("span",attrs={"id":"LabelDescription"}).text
-                descricao.append(d)
-        return(descricao)
-                
-    def coletar_titulo(self)->list:
-        titulo = []
+        Returns:
+            str: fechado/aberto
+        """
 
-        if(self.site.find('span',attrs={'id':'LabelTopic'})):
-            d = self.site.find('span',attrs={'id':'LabelTopic'}).text
-            titulo.append(d)
-        return(titulo)
-    
-    def coletar_prioridade(self)->list:
-        prioridade = []
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelStatus'}).text
 
-        if(self.site.find('span', attrs={'id':'LabelPriority'})):
-            d = self.site.find('span', attrs={'id':'LabelPriority'})
-            prioridade.append(d)
-        return(prioridade)
-    
-    def coletar_responsavel(self)->list:
-        responsavel = []
-
-        if(self.site.find('span', attrs={'id':'LabelAssignTo'})):
-            d = self.site.find('span', attrs={'id':'LabelAssignTo'}).text
-            responsavel.append(d)
-        return(responsavel)
-    
-    def coletar_tipo(self)->list:
-        tipo = []
-
-        if(self.site.find('span', attrs={'id':'LabelType'})):
-            d = self.site.find('span', attrs={'id':'LabelType'}).text
-            tipo.append(d)
-        return(tipo)
-    
-    def coletar_area(self)->list:
-        area = []
-
-        if(self.site.find('span', attrs={'id':'LabelArea'})):
-            d = self.site.find('span', attrs={'id':'LabelArea'}).text
-            area.append(d)
-        return(area)
-    
-    def coletar_data(self)->list:
-        data = []
-
-        if(self.site.find('span', attrs={'id':'LabelDeadline'})):
-            d = self.site.find('span', attrs={'id':'LabelDeadline'}).text
-            data.append(d)
-        return(data)
+        except:
+            resultSatus = ResultStatus(12,'Não foi possível coletar o status')
+            print(resultSatus.statusGenerate())
+            pass
+        
+        else:
+            status = self.htmlList.find('span', attrs={'id':'LabelStatus'}).text
+            resultSatus = ResultStatus(12,'Status coletado')
+            print(resultSatus.statusGenerate())
             
-    def coletar_etiqueta(self)->list:
-        etiqueta = []
-
-        if(self.site.find('span', attrs={'id':'LabelLabel'})):
-            d = self.site.find('span', attrs={'id':'LabelLabel'}).text
-            etiqueta.append(d)
-        return(etiqueta)
+            return(status)
     
-    def coletar_milestone(self)->list:
-        milestone = []
+    def titleColect(self)->str:
+        """Coleta o titulo do dado
 
-        if(self.site.find('span', attrs={'id':'LabelMilestone'})):
-            d = self.site.find('span', attrs={'id':'LabelMilestone'}).text
-            milestone.append(d)
-        return(milestone)
+        Returns:
+            str: 0000-nome
+        """
+        try:
+            self.htmlList.find('span',attrs={'id':'LabelTopic'}).text
+            
+        except:
+            statusResult = ResultStatus(13,'Não foi possível coletar o título')
+            print(statusResult.statusGenerate())
+        
+        else:
+            title = self.htmlList.find('span',attrs={'id':'LabelTopic'}).text
+            statusResult = ResultStatus(13,'Título coletado')
+            print(statusResult.statusGenerate())
+            
+            return(title)
     
-    def coletar_status(self)->list:
-        status = []
+    def buildColect(self)->str:
+        """
+        Coleta o empreendimento
 
-        if(self.site.find('span', attrs={'id':'LabelStatus'})):
-            d = self.site.find('span', attrs={'id':'LabelStatus'}).text
-            status.append(d)
-        return(status)
+        Returns:
+            str: Max trindade
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelCurrentProject'}).text
+        
+        except:
+            statusResult = ResultStatus(14, 'Não foi possível coletar o empreendimento')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            build = self.htmlList.find('span', attrs={'id':'LabelCurrentProject'}).text
+            statusResult = ResultStatus(14, 'Empreendimento coletado')
+            print(statusResult.statusGenerate())
+            
+            return(build)
     
-    def coletar_empreendimento(self)->list:
-        empreendimento = []
+    def descriptionColect(self)->str:
+        """
+        Coleta a descrição do empreendimento
 
-        if(self.site.find('span', attrs={'id':'LabelCurrentProject'})):
-            d = self.site.find('span', attrs={'id':'LabelCurrentProject'}).text
-            empreendimento.append(d)
-        return(empreendimento)
+        Returns:
+            str: 0000-Tubulação
+        """
+        try:
+            self.htmlList.find("span",attrs={"id":"LabelDescription"}).text
+        
+        except:
+            statusResult = ResultStatus(15, 'Não foi possível coletar a descrição')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            description = self.htmlList.find("span",attrs={"id":"LabelDescription"}).text
+            statusResult = ResultStatus(15, 'Descrição coletada')
+            print(statusResult.statusGenerate())
+            
+            return(description)
+    
+    def labelColect(self)->str:
+        """
+        Coleta as disciplinas do problema
+
+        Returns:
+            str: Arquitetura, Estrutura
+        """
+        
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelLabel'}).text
+        
+        except:
+            statusResult = ResultStatus(16, 'Não foi possível coletar a etiqueta')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            label = self.htmlList.find('span', attrs={'id':'LabelLabel'}).text
+            statusResult = ResultStatus(16, 'Etiqueta coletada')
+            print(statusResult.statusGenerate())
+            
+            return(label)
+
+    def assingToColect(self)->str:
+        """
+        Coletar o responsável pela incompatibilidade
+
+        Returns:
+            str: João
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelAssignTo'}).text
+        
+        except:
+            statusResult = ResultStatus(17, 'Não foi possível coletar o responsável')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            assingTo = self.htmlList.find('span', attrs={'id':'LabelAssignTo'}).text
+            statusResult = ResultStatus(17, 'Responsável coletado')
+            print(statusResult.statusGenerate())
+            
+            return(assingTo)
+        
+    def milestoneColect(self)->str:
+        """
+        Coleta a fase
+
+        Returns:
+            str: Construção virtual 02
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelMilestone'}).text
+        
+        except:
+            statusResult = ResultStatus(18, 'Não foi possível coletar a fase')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            milestone = self.htmlList.find('span', attrs={'id':'LabelMilestone'}).text
+            statusResult = ResultStatus(18, 'Fase coletada')
+            print(statusResult.statusGenerate()) 
+
+            return(milestone)
+    
+    def typeColect(self)->str:
+        """
+        Coleta o tipo da incompatibilidade
+
+        Returns:
+            str: Otimização
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelType'}).text
+        
+        except:
+            statusResult = ResultStatus(19, 'Não foi possível coletar o tipo')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            dataType = self.htmlList.find('span', attrs={'id':'LabelType'}).text
+            statusResult = ResultStatus(19, 'Tipo coletado')
+            print(statusResult.statusGenerate()) 
+
+            return(dataType)
+    
+    def areaColect(self)->str:
+        """
+        Coleta a área do problema
+
+        Returns:
+            str: Pavimento coberta
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelArea'}).text
+        
+        except:
+            statusResult = ResultStatus(20, 'Não foi possível coletar a localização')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            area = self.htmlList.find('span', attrs={'id':'LabelArea'}).text
+            statusResult = ResultStatus(20, 'Localização coletada')
+            print(statusResult.statusGenerate()) 
+
+            return(area)
+
+    def deadlineColect(self)->str:
+        """
+        Coleta o prazo de resposta do projetista
+
+        Returns:
+            str: 26-04-2000
+        """
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelDeadline'}).text
+        
+        except:
+            statusResult = ResultStatus(21, 'Não foi possível coletar o prazo')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            deadline = self.htmlList.find('span', attrs={'id':'LabelDeadline'}).text
+            statusResult = ResultStatus(21, 'Prazo coletado')
+            print(statusResult.statusGenerate()) 
+
+            return(deadline)
+
+    def priorityColect(self)->str:
+        """
+        Coleta a prioridade de cada problema
+
+        Returns:
+            str: Crítico
+        """
+        
+        try:
+            self.htmlList.find('span', attrs={'id':'LabelPriority'}).text
+        
+        except:
+            statusResult = ResultStatus(22, 'Não foi possível coletar a prioridade')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            priority = self.htmlList.find('span', attrs={'id':'LabelPriority'}).text
+            statusResult = ResultStatus(22, 'Prioridade coletada')
+            print(statusResult.statusGenerate()) 
+
+            return(priority)
+    
+    def lastModificationColect(self)->str:
+        """
+        Coleta a última data e hora de modificação
+
+        Returns:
+            str: 26-04-200 19:00
+        """
+        try:
+            self.htmlList.find('div', attrs={'class':'col12'}).text
+        
+        except:
+            statusResult = ResultStatus(23, 'Não foi possível coletar a última modificação')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            lastModification = self.htmlList.find('div', attrs={'class':'col12'}).text
+            statusResult = ResultStatus(23, 'Última modificação coletada')
+            print(statusResult.statusGenerate()) 
+
+            return(lastModification)
+    
+    
     
     def coletar_comentarios_imagens(self)->list:
+        """
+        Não usar, ainda está sendo desenvolvida
+
+        Returns:
+            list: ERRO!
+        """
         comentario = []
         imagem = []
         elementos = self.site.find_all("div",attrs={"class":"onerow commentContent innerPaddingComment"})

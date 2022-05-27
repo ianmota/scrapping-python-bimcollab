@@ -1,13 +1,20 @@
 import openpyxl as op
 from openpyxl.drawing.image import Image
 import openpyxl.styles as ops
-from backend.scrapper.scrapper import *
+from DataBaseConstruction import *
 
-class ScrapperSavePaper():
-    def __init__(self,database:ScrapperColect) -> None:
+class DataSave():
+    def __init__(self,database:Database) -> None:
+        """
+        Salva todos os dados em um arquivo
+        Args:
+            database (ScrapperColect): dicionário com os dados
+        """
         self.db = database 
-        
-    def salvar_dados(self):
+    def salvar_dados_relatório(self):
+        """
+        Não usar, ainda estão em desenvolvimento
+        """
         lw = op.Workbook()
         sheet = lw.active
 
