@@ -439,7 +439,7 @@ class ScrapperColect():
             str: 26-04-200 19:00
         """
         try:
-            self.htmlList.find('div', attrs={'class':'col12'}).text
+            self.htmlList.find('div', attrs={'id':'PanelCommentList'})
         
         except:
             statusResult = ResultStatus(23, 'Não foi possível coletar a última modificação')
@@ -447,11 +447,12 @@ class ScrapperColect():
             pass
         
         else:
-            lastModification = self.htmlList.find('div', attrs={'class':'col12'}).text
+            lastModification = self.htmlList.find('div', attrs={'id':'PanelCommentList'})
+            lastModification = lastModification.find('div', attrs={'class':"onerow commentTitle innerPaddingComment"})
             statusResult = ResultStatus(23, 'Última modificação coletada')
             print(statusResult.statusGenerate()) 
 
-            return(lastModification)
+            return(lastModification.find('p').text)
     
     
     

@@ -53,6 +53,9 @@ class Database():
         return(dataDictionary)
     
     def dbBuild(self):
-        database = pd.DataFrame(self.dictionaryGeneration(),index=False)
+        dicionario = self.dictionaryGeneration()
+        index = dicionario.pop("ID")
+        
+        database = pd.DataFrame(self.dictionaryGeneration(),index=index)
     
-    
+        return(database)

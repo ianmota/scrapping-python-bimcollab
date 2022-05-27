@@ -47,7 +47,7 @@ for i in browser.htmlList:
     prioridade.append(coleta.priorityColect())
     ultimaAlteracao.append(coleta.lastModificationColect())
     
-banco = Database(id,titulo,status,empreendimento,descricao,etiqueta,responsavel,tipo,area,prazo,prioridade,ultimaAlteracao)
+banco = Database(id=id, title=titulo,status=status, build=empreendimento, description=descricao, label=etiqueta,assingTo=responsavel,milestone=fase,dataType=tipo,area=area,deadline=prazo,priority=prioridade,lastModification=ultimaAlteracao)
 
 dicionario = banco.dictionaryGeneration()
 print(dicionario)
