@@ -1,10 +1,10 @@
 import openpyxl as op
 from openpyxl.drawing.image import Image
 import openpyxl.styles as ops
-from DataBaseConstruction import *
+import pandas as pd
 
 class DataSave():
-    def __init__(self,database:Database) -> None:
+    def __init__(self,database) -> None:
         """
         Salva todos os dados em um arquivo
         Args:
@@ -105,3 +105,11 @@ class DataSave():
         
         nome_planilha = nome_planilha + ".xlsx"
         lw.save(nome_planilha)    
+    
+def dbBuildAnalysys(self,dic):
+    dicionario = dic
+    index = dicionario.pop("ID")
+    
+    database = pd.DataFrame(self.dictionaryGeneration(),index=index)
+    database.to_csv(path_or_buf="DadosBrutos.csv",index= False,sep=";")
+    return(database)

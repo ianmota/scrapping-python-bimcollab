@@ -454,6 +454,52 @@ class ScrapperColect():
 
             return(lastModification.find('p').text)
     
+    def firstModificationColect(self)->str:
+        """Coleta a primeira data e hora de modificação
+
+        Returns:
+            str: 26-04-200 19:00
+        """
+        try:    
+            self.htmlList.find('div', attrs={'id':'PanelCommentList'})
+        
+        except:
+            statusResult = ResultStatus(23, 'Não foi possível coletar a primeira modificação')
+            print(statusResult.statusGenerate())
+            pass
+        
+        else:
+            firstModification = self.htmlList.find('div', attrs={'id':'PanelCommentList'})
+            firstModification = firstModification.find_all('div', attrs={'class':"onerow commentTitle innerPaddingComment"})
+            statusResult = ResultStatus(23, 'Última modificação coletada')
+            print(statusResult.statusGenerate()) 
+            return(firstModification[-1].find('p').text)
+    
+    def dictionaryGeneration(self)->dict:
+        """Gera um dicionário com todas as informações coletadas
+
+        Returns:
+            dict: informações coletadas
+        """
+        dataDictionary = {
+            "ID":self.numberColect(),
+            "Título": self.titleColect(),
+            "Status": self.statusColect(),
+            "Empreendimento": self.buildColect(),
+            "Descrição":self.descriptionColect(),
+            "Etiqueta": self.labelColect(),
+            "Responsável": self.assingToColect(),
+            "Fase": self.milestoneColect(),
+            "Tipo":self.typeColect(),
+            "Local": self.areaColect(),
+            "Prazo": self.deadlineColect(),
+            "Prioridade": self.priorityColect(),
+            "Última modificação": self.lastModificationColect(),
+            "Primeira alteração": self.firstModificationColect()
+            
+        }
+        return(dataDictionary)
+    
     
     
     def coletar_comentarios_imagens(self)->list:

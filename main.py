@@ -1,5 +1,5 @@
 from backend.scrapper.scrapper import ScrapperResearch, ScrapperColect
-from data.DataBaseConstruction import Database
+from data.dataSave import dbBuildAnalysys
 
 email = "oscarfreire@projete5d.com.br"
 password = "@Timeprojete5d"
@@ -29,31 +29,14 @@ area = []
 prazo = []
 prioridade =[]
 ultimaAlteracao = []
+primeiraAlteracao = []
 
 for i in browser.htmlList:
     coleta = ScrapperColect(i)
     
-    id.append(coleta.numberColect())
-    titulo.append(coleta.titleColect())
-    status.append(coleta.statusColect())
-    descricao.append(coleta.descriptionColect())
-    empreendimento.append(coleta.buildColect())
-    etiqueta.append(coleta.labelColect())
-    responsavel.append(coleta.assingToColect())
-    fase.append(coleta.milestoneColect())
-    tipo.append(coleta.typeColect())
-    area.append(coleta.areaColect())
-    prazo.append(coleta.deadlineColect())
-    prioridade.append(coleta.priorityColect())
-    ultimaAlteracao.append(coleta.lastModificationColect())
+    dicionario = coleta.dictionaryGeneration()
     
-banco = Database(id=id, title=titulo,status=status, build=empreendimento, description=descricao, label=etiqueta,assingTo=responsavel,milestone=fase,dataType=tipo,area=area,deadline=prazo,priority=prioridade,lastModification=ultimaAlteracao)
-
-dicionario = banco.dictionaryGeneration()
-print(dicionario)
-    
-dataframe = banco.dbBuild()
-print(dataframe)
+dataframe = dbBuildAnalysys(dicionario)
     
     
     
