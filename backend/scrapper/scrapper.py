@@ -500,8 +500,6 @@ class ScrapperColect():
         }
         return(dataDictionary)
     
-    
-    
     def coletar_comentarios_imagens(self)->list:
         """
         Não usar, ainda está sendo desenvolvida

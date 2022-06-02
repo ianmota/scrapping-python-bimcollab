@@ -106,10 +106,9 @@ class DataSave():
         nome_planilha = nome_planilha + ".xlsx"
         lw.save(nome_planilha)    
     
-def dbBuildAnalysys(self,dic):
-    dicionario = dic
-    index = dicionario.pop("ID")
+def dbBuildCSV(dic:dict,localSave:str):
+    index = dic.pop("ID")
     
-    database = pd.DataFrame(self.dictionaryGeneration(),index=index)
-    database.to_csv(path_or_buf="DadosBrutos.csv",index= False,sep=";")
+    database = pd.DataFrame(dic,index=index)
+    database.to_csv(path_or_buf=localSave,index= False,sep=";")
     return(database)
