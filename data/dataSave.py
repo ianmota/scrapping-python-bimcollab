@@ -107,8 +107,7 @@ class DataSave():
         lw.save(nome_planilha)    
     
 def dbBuildCSV(dic:dict,localSave:str):
-    index = dic.pop("ID")
     
-    database = pd.DataFrame(dic,index=index)
-    database.to_csv(path_or_buf=localSave,index= False,sep=";")
+    database = pd.DataFrame(dic)
+    database.to_csv(path_or_buf=localSave,index= False,sep=";" ,encoding='utf-8')
     return(database)

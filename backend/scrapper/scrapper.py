@@ -5,10 +5,9 @@ import requests
 from backend.scrapper.errorScrapper.errorHandling import *
 
 class ScrapperResearch():
-    def __init__(self,login:str,senha:str,local_save:str,standardTime:int = 15):
+    def __init__(self,login:str,senha:str,standardTime:int = 15):
         self.login = login
         self.password = senha
-        self.localSave = local_save  
         self.standardTime = standardTime
     
     def __str__(self) -> str:
