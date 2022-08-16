@@ -1,7 +1,7 @@
 class Analysys():
     def __init__(self,dicionario) -> None:
         self.dic = dicionario
-        self.GlobalVariables()
+        self.GlobalVariables() 
     
     def GlobalVariables(self):
         self.id1 = list()
@@ -102,25 +102,56 @@ class Analysys():
     def ErrorID(self):                            
         for i in range(len(self.elementos[0])):
             if not self.elementos[0][i]:
+                
                 for j in range(1,len(self.elementos)):
                     self.elementos[j][i] = "VERIFICAR"
         
-        for i in range(len(self.elementos[0])):
-            if not self.elementos[0][i]:
                 for j in range(0,len(self.disciplinas)):
                     self.disciplinas[j][i] = "VERIFICAR"
         
-        for i in range(len(self.elementos[0])):
-            if not self.elementos[0][i]:
                 self.updatedStatus[i] = "VERIFICAR"
         
-        for i in range(len(self.elementos[0])):
-            if not self.elementos[0][i]:
                 self.incompatibilidades[i] = "VERIFICAR"
                 self.sugestoes[i] = "VERIFICAR"
                 self.duvidas[i] = "VERIFICAR"
-   
 
+                self.dic["Empreendimento"][i] = "VERIFICAR"
+                self.dic["Responsável"][i] = "VERIFICAR"
+                self.dic["Fase"][i] = "VERIFICAR"
+                self.dic["Tipo"][i] = "VERIFICAR"
+                self.dic["Local"][i] = "VERIFICAR"
+                self.dic["Prazo"][i] = "VERIFICAR"
+                self.dic["Prioridade"][i] = "VERIFICAR"
+                
+                self.elementos[0][i] = "VERIFICAR"
+
+    def ErrorTxt(self):
+        msgAvaliacao = "AVALIAR ESCRITA"
+        
+        for i in range(len(self.dic["Tipo"])): 
+            errorList = ["issue","remark","request","inquiry", "major", "on hold", "minor",]
+            
+            if self.dic["Tipo"][i].lower() in errorList:
+                self.dic["Tipo"][i] = msgAvaliacao
+            
+            if self.dic["Prioridade"][i].lower() in errorList:
+                self.dic["Prioridade"][i] = msgAvaliacao
+            
+            if self.dic["Local"][i] == "-":
+                self.dic["Local"][i] = msgAvaliacao
+                
+            if self.dic["Fase"][i] == "Undecided":
+                self.dic["Fase"][i] = msgAvaliacao
+            
+            if self.disciplinas[0][i] == "-":
+                for j in range(0,len(self.disciplinas)):
+                    self.disciplinas[j][i] = msgAvaliacao
+            
+            if not self.incompatibilidades[i] and not self.sugestoes[i] and not self.duvidas[i]:
+                self.incompatibilidades[i] = msgAvaliacao
+                self.sugestoes[i] = msgAvaliacao
+                self.duvidas[i] = msgAvaliacao
+            
     def GetDisciplinas(self):
         for titulos in self.dic["Etiqueta"]:
             etiquetas = titulos.split(",")
@@ -134,9 +165,11 @@ class Analysys():
         return etiquetas
     
     def GetStatus(self):
-        for status in dicionario["Status"]:
+        for status in self.dic["Status"]:
+            
             if status.replace(" ","").upper() == "Active".upper():
                 self.updatedStatus.append("Aberta")
+                
             elif status.replace(" ","").upper() == "Resolved".upper():
                 self.updatedStatus.append("Resolvida")
             
@@ -144,10 +177,11 @@ class Analysys():
                 self.updatedStatus.append("Resolvida")
                 
     def GetMarcadores(self):
-        for j in range(len(dicionario["Descrição"])):
-            splitDs01 = dicionario["Descrição"][j].split("-")
+        for j in range(len(self.dic["Descrição"])):
+            splitDs01 = self.dic["Descrição"][j].split("-")
             
             for i in range(len(splitDs01)):
+                
                 if not splitDs01[i]:
                     splitDs01[i] = None
                 elif len(splitDs01[i]) > 1:
@@ -169,20 +203,19 @@ class Analysys():
             self.duvidas.append(duvida) 
     
     def GetFirstAlteration(self):
-        for p_alteracao in dicionario["Primeira alteração"]:
+        for p_alteracao in self.dic["Primeira alteração"]:
             split01 = p_alteracao.split(" ")[-2]
             self.primeirasAlteracoes.append(split01.replace("-","/"))
     
     def GetLastAlteration(self):
-        for u_alteracao in dicionario["Última alteração"]:
+        for u_alteracao in self.dic["Última alteração"]:
             split01 = u_alteracao.split(" ")[-2]
             self.ultimasAlteracoes.append(split01.replace("-","/")) 
     
     def DicFiltered(self):
-        _dicionario = self.dic
         dicionarioFiltrado = dict()
 
-        dicionarioFiltrado["ID"] = _dicionario["ID"]
+        dicionarioFiltrado["ID"] = self.dic["ID"]
         dicionarioFiltrado["ID-ELEMENTO 01"] = self.elementos[0]
         dicionarioFiltrado["ELEMENTO 01"] = self.elementos[1]
         dicionarioFiltrado["ID-ELEMENTO 02"] = self.elementos[2]
@@ -201,13 +234,13 @@ class Analysys():
         dicionarioFiltrado["DISCIPLINA 06"] = self.disciplinas[5]
         dicionarioFiltrado["DISCIPLINA 07"] = self.disciplinas[6]
         dicionarioFiltrado["STATUS"] = self.updatedStatus
-        dicionarioFiltrado["EMPREENDIMENTO"] = _dicionario["Empreendimento"]
-        dicionarioFiltrado["RESPONSÁVEL"] = _dicionario["Responsável"]
-        dicionarioFiltrado["FASE"] = _dicionario["Fase"]
-        dicionarioFiltrado["TIPO"] = _dicionario["Tipo"]
-        dicionarioFiltrado["LOCAL"] = _dicionario["Local"]
-        dicionarioFiltrado["PRAZO"] = _dicionario["Prazo"]
-        dicionarioFiltrado["PRIORIDADE"] = _dicionario["Prioridade"]
+        dicionarioFiltrado["EMPREENDIMENTO"] = self.dic["Empreendimento"]
+        dicionarioFiltrado["RESPONSÁVEL"] = self.dic["Responsável"]
+        dicionarioFiltrado["FASE"] = self.dic["Fase"]
+        dicionarioFiltrado["TIPO"] = self.dic["Tipo"]
+        dicionarioFiltrado["LOCAL"] = self.dic["Local"]
+        dicionarioFiltrado["PRAZO"] = self.dic["Prazo"]
+        dicionarioFiltrado["PRIORIDADE"] = self.dic["Prioridade"]
         dicionarioFiltrado["PRIMEIRA ALTERAÇÃO"] = self.primeirasAlteracoes
         dicionarioFiltrado["ÚLTIMA ALTERAÇÃO"] = self.ultimasAlteracoes
         dicionarioFiltrado["MARCADOR 01"] = self.incompatibilidades
@@ -216,5 +249,3 @@ class Analysys():
         
         return dicionarioFiltrado
     
-
-
