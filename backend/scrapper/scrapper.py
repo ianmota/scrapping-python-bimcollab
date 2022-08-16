@@ -9,7 +9,8 @@ class ScrapperResearch():
         self.login = login
         self.password = senha
         self.standardTime = standardTime
-    
+        
+        self.statusColeta = ""
     def __str__(self) -> str:
         return("html_resource")
     
@@ -149,6 +150,7 @@ class ScrapperResearch():
                 status = ResultStatus(6,f'Falha na coleta da incompatibilidade {i}')
                 print(status.statusGenerate())
                 self.navegador.refresh()
+                self.statusColeta = f"INCOMPATIBILIDADE {i+1} DE {len(issueList)} --> ERRO!"
                 continue
             
             else:
@@ -159,6 +161,7 @@ class ScrapperResearch():
                 html = bs(self.navegador.page_source, 'html.parser')
                 self.htmlList.append(html)
                 self.navegador.back()
+                self.statusColeta = f"INCOMPATIBILIDADE {i+1} DE {len(issueList)} --> OK"
             
 
 class ScrapperColect():

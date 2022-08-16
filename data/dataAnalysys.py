@@ -1,6 +1,6 @@
 class Analysys():
-    def __init__(self,dicionario) -> None:
-        self.dic = dicionario
+    def __init__(self,dicionario:dict) -> None:
+        self.dic = dicionario.copy()
         self.GlobalVariables() 
     
     def GlobalVariables(self):
@@ -249,3 +249,15 @@ class Analysys():
         
         return dicionarioFiltrado
     
+    def Filter(self):
+            self.SeparadorInc()
+            self.SeparadorID()
+            self.VerInc()
+            self.VerID()
+            self.GetDisciplinas()
+            self.GetStatus()
+            self.GetMarcadores()
+            self.GetFirstAlteration()
+            self.GetLastAlteration()
+            self.ErrorID()
+            self.ErrorTxt()
