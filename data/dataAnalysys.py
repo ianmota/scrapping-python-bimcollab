@@ -1,6 +1,6 @@
 class Analysys():
     def __init__(self,dicionario:dict) -> None:
-        self.dic = dicionario.copy()
+        self.dic = dicionario
         self.GlobalVariables() 
     
     def GlobalVariables(self):

@@ -124,11 +124,9 @@ class Application(ScrapperResearch,ScrapperColect,Analysys):
             self.lb_fraseImpacto["state"]="normal"
             self.lb_fraseImpacto.insert(END,"\nFAZENDO LOGIN","gray")
             self.lb_fraseImpacto["state"]="disabled"
-
             
             self.browser.addSenha()
             self.browser.addCompany()
-            
             self.lb_fraseImpacto["state"]="normal"
             self.lb_fraseImpacto.insert(END,"\nLOGIN --> OK","green")
             self.lb_fraseImpacto["state"]="disabled"
@@ -229,6 +227,10 @@ class Application(ScrapperResearch,ScrapperColect,Analysys):
             self.dicionario["Última alteração"] = ultimaAlteracao
             self.dicionario["Primeira alteração"] = primeiraAlteracao
             
+            nomeEmail = self.en_usuario.get()
+            nomeArquivo = nomeEmail.split('@')
+        
+            dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
             self.FilterDict()
             
         except UnboundLocalError:
@@ -244,7 +246,7 @@ class Application(ScrapperResearch,ScrapperColect,Analysys):
 
             
     def FilterDict(self):
-        dicfilter = Analysys(self.dicionario)
+        dicfilter = Analysys(self.dicionario.copy())
         dicfilter.Filter()
         
         self.filt_dict = dicfilter.DicFiltered()
@@ -254,7 +256,7 @@ class Application(ScrapperResearch,ScrapperColect,Analysys):
         nomeEmail = self.en_usuario.get()
         nomeArquivo = nomeEmail.split('@')
         
-        dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
+        # dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
         dbBuildCSV(self.filt_dict,f'{self.en_localSalve}/{nomeArquivo[0]}_filt.csv')
         
         self.bt_confirmar["state"]="normal"
