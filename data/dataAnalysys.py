@@ -189,19 +189,21 @@ class Analysys():
 
                 if splitDs01[i] == "I":
                     incompatibilidade = splitDs01[i]
-                elif splitDs01[i] == "S":
-                    sugestao = splitDs01[i]
-                elif splitDs01[i] == "D":
-                    duvida = splitDs01[i]
                 else:
                     incompatibilidade = None
-                    sugestao = None
+                if splitDs01[i] == "S":
+                    sugestao = splitDs01[i]
+                else:
+                    sugestao = None 
+                if splitDs01[i] == "D":
+                    duvida = splitDs01[i]
+                else:
                     duvida = None
                 
             self.incompatibilidades.append(incompatibilidade)
             self.sugestoes.append(sugestao)
             self.duvidas.append(duvida) 
-    
+     
     def GetFirstAlteration(self):
         for p_alteracao in self.dic["Primeira alteração"]:
             split01 = p_alteracao.split(" ")[-2]
