@@ -190,73 +190,67 @@ class Application(ScrapperResearch,ScrapperColect,Analysys):
         ultimaAlteracao = []
         primeiraAlteracao = []
 
-        try:
-            self.dicionario = {}
-            for i in self.browser.htmlList:
-                coleta = ScrapperColect(i)
-                dicBase = coleta.dictionaryGeneration()
-                
-                id.append(dicBase.get("ID"))
-                titulo.append(dicBase.get("Título"))    
-                status.append(dicBase.get("Status")) 
-                descricao.append(dicBase.get("Descrição")) 
-                empreendimento.append(dicBase.get("Empreendimento"))
-                etiqueta.append(dicBase.get("Etiqueta"))
-                responsavel.append(dicBase.get("Responsável"))
-                fase.append(dicBase.get("Fase"))
-                tipo.append(dicBase.get("Tipo"))
-                area.append(dicBase.get("Local"))
-                prazo.append(dicBase.get("Prazo"))
-                prioridade.append(dicBase.get("Prioridade"))
-                ultimaAlteracao.append(dicBase.get("Última modificação"))
-                primeiraAlteracao.append(dicBase.get("Primeira alteração"))
-                
-                
-            self.dicionario["ID"] = id
-            self.dicionario["Título"] = titulo
-            self.dicionario["Status"] = status
-            self.dicionario["Descrição"] = descricao
-            self.dicionario["Empreendimento"] = empreendimento
-            self.dicionario["Etiqueta"] = etiqueta
-            self.dicionario["Responsável"] = responsavel
-            self.dicionario["Fase"] = fase
-            self.dicionario["Tipo"] = tipo
-            self.dicionario["Local"] = area
-            self.dicionario["Prazo"] = prazo
-            self.dicionario["Prioridade"] = prioridade
-            self.dicionario["Última alteração"] = ultimaAlteracao
-            self.dicionario["Primeira alteração"] = primeiraAlteracao
+        # try:
+        self.dicionario = {}
+        for i in self.browser.htmlList:
+            coleta = ScrapperColect(i)
+            dicBase = coleta.dictionaryGeneration()
             
-            nomeEmail = self.en_usuario.get()
-            nomeArquivo = nomeEmail.split('@')
+            id.append(dicBase.get("ID"))
+            titulo.append(dicBase.get("Título"))    
+            status.append(dicBase.get("Status")) 
+            descricao.append(dicBase.get("Descrição")) 
+            empreendimento.append(dicBase.get("Empreendimento"))
+            etiqueta.append(dicBase.get("Etiqueta"))
+            responsavel.append(dicBase.get("Responsável"))
+            fase.append(dicBase.get("Fase"))
+            tipo.append(dicBase.get("Tipo"))
+            area.append(dicBase.get("Local"))
+            prazo.append(dicBase.get("Prazo"))
+            prioridade.append(dicBase.get("Prioridade"))
+            ultimaAlteracao.append(dicBase.get("Última modificação"))
+            primeiraAlteracao.append(dicBase.get("Primeira alteração"))
+            
+            
+        self.dicionario["ID"] = id
+        self.dicionario["Título"] = titulo
+        self.dicionario["Status"] = status
+        self.dicionario["Descrição"] = descricao
+        self.dicionario["Empreendimento"] = empreendimento
+        self.dicionario["Etiqueta"] = etiqueta
+        self.dicionario["Responsável"] = responsavel
+        self.dicionario["Fase"] = fase
+        self.dicionario["Tipo"] = tipo
+        self.dicionario["Local"] = area
+        self.dicionario["Prazo"] = prazo
+        self.dicionario["Prioridade"] = prioridade
+        self.dicionario["Última alteração"] = ultimaAlteracao
+        self.dicionario["Primeira alteração"] = primeiraAlteracao
         
-            dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
-            self.FilterDict()
-            
-        except UnboundLocalError:
-            self.bt_confirmar["state"]="normal"
-            self.en_usuario["state"]="normal"
-            self.en_senha["state"] = "normal"
-            self.bt_localSave["state"] = "normal"
-            
-            self.lb_fraseImpacto["state"]="normal"
-            self.lb_fraseImpacto.delete(1.0,END)
-            self.lb_fraseImpacto.insert(END,"ERRO GRAVE!\nVERIFICAR LOGIN E SENHA","red")
-            self.lb_fraseImpacto["state"]="disabled"
-
-            
-    def FilterDict(self):
-        dicfilter = Analysys(self.dicionario.copy())
-        dicfilter.Filter()
-        
-        self.filt_dict = dicfilter.DicFiltered()
         self._save()
+        
+        # except UnboundLocalError:
+        #     self.bt_confirmar["state"]="normal"
+        #     self.en_usuario["state"]="normal"
+        #     self.en_senha["state"] = "normal"
+        #     self.bt_localSave["state"] = "normal"
+            
+        #     self.lb_fraseImpacto["state"]="normal"
+        #     self.lb_fraseImpacto.delete(1.0,END)
+        #     self.lb_fraseImpacto.insert(END,"ERRO GRAVE!\nVERIFICAR LOGIN E SENHA","red")
+        #     self.lb_fraseImpacto["state"]="disabled"
+
         
     def _save(self):
         nomeEmail = self.en_usuario.get()
         nomeArquivo = nomeEmail.split('@')
         
-        # dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
+        dbBuildCSV(self.dicionario,f'{self.en_localSalve}/{nomeArquivo[0]}.csv')
+        
+        dicfilter = Analysys(self.dicionario)
+        dicfilter.Filter()
+        
+        self.filt_dict = dicfilter.DicFiltered()
         dbBuildCSV(self.filt_dict,f'{self.en_localSalve}/{nomeArquivo[0]}_filt.csv')
         
         self.bt_confirmar["state"]="normal"
