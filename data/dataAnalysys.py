@@ -180,24 +180,26 @@ class Analysys():
         for j in range(len(self.dic["Descrição"])):
             splitDs01 = self.dic["Descrição"][j].split("-")
             
+            incompatibilidade = None
+            sugestao = None
+            duvida = None
             for i in range(len(splitDs01)):
                 
                 if not splitDs01[i]:
                     splitDs01[i] = None
-                elif len(splitDs01[i]) > 1:
-                    splitDs01[i] = None
+                elif len(splitDs01[i])>1:
+                    splitDs01[i] = None 
 
+                    
                 if splitDs01[i] == "I":
                     incompatibilidade = splitDs01[i]
                 elif splitDs01[i] == "S":
                     sugestao = splitDs01[i]
                 elif splitDs01[i] == "D":
                     duvida = splitDs01[i]
-                else:
-                    incompatibilidade = None
-                    sugestao = None
-                    duvida = None
-                
+
+                   
+
             self.incompatibilidades.append(incompatibilidade)
             self.sugestoes.append(sugestao)
             self.duvidas.append(duvida) 
