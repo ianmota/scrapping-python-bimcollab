@@ -190,7 +190,6 @@ class Analysys():
                 elif len(splitDs01[i])>1:
                     splitDs01[i] = None 
 
-                    
                 if splitDs01[i] == "I":
                     incompatibilidade = splitDs01[i]
                 elif splitDs01[i] == "S":
